@@ -1,13 +1,14 @@
 package com.example.transport
 
 import java.io.{IOException, _}
-import java.net.{InetAddress, Socket}
+import java.net.{InetAddress, ServerSocket, Socket}
 
 object Sender {
 	def send(packet: String): Unit = {
 		try {
 			println(s"Sender has this: $packet")
-			val socket = new Socket(InetAddress.getByName("localhost"), 10016)
+			val serverSocket = new ServerSocket(10016)
+			val socket = serverSocket.accept()
 			println("socket created")
 			val out = new ObjectOutputStream(new DataOutputStream(socket.getOutputStream))
 			println("evrythin is created")
