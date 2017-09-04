@@ -1,10 +1,9 @@
 package com.example.local
 
 import com.example.transport.Sender
+import com.google.gson.Gson
 import net.sourceforge.jpcap.capture.{PacketCapture, PacketListener}
 import net.sourceforge.jpcap.net.{Packet, TCPPacket}
-import org.json4s.{DefaultFormats, Formats}
-import org.json4s.jackson.Serialization.write
 
 class ScalaSniffer(device: String) {
 
@@ -26,17 +25,13 @@ class ScalaSniffer(device: String) {
 
 class ScalaPacketHandler extends PacketListener {
 
-  implicit val jsonFormats: Formats = DefaultFormats
-
   def packetArrived(packet: Packet): Unit = {
-    // only handle TCP packets
+    println("packet arrived")
 
     packet match {
       case tcpPacket: TCPPacket =>
-
 //        TODO sending to Spark server
-        Sender.send(write(tcpPacket))
-        println("handler send")
+        Sender.send(tcpPacket.toString)
 
         /*val data = tcpPacket.getTCPData
         val srcHost = tcpPacket.getSourceAddress
@@ -44,7 +39,7 @@ class ScalaPacketHandler extends PacketListener {
         val isoData = new String(data, "ISO-8859-1")
         println(srcHost + " -> " + dstHost + ": " + isoData)*/
 
-      case _ => println("Not a TCP packet")
+      case _ =>
     }
   }
 

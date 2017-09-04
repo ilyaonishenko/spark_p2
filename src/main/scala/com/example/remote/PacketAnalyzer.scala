@@ -3,6 +3,7 @@ package com.example.remote
 import java.io.File
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 object PacketAnalyzer extends App{
@@ -17,8 +18,13 @@ object PacketAnalyzer extends App{
     .getOrCreate()
     .sparkContext
 
-  val ssc = new StreamingContext(sparkContext, Seconds(1))
+  val ssc = new StreamingContext(sparkContext, Seconds(10))
 
-  val packets = ssc.socketTextStream("localhost", 9999)
-  packets.foreachRDD(rdd => rdd.foreach(str => println(str)))
+//  val packets = ssc.receiverStream(new PacketsReceiver("localhost", 9993))
+  val packets = ssc.socketTextStream("localhost", 10016, StorageLevel.MEMORY_AND_DISK_2)
+  packets.map(println).saveAsTextFiles("/tasks/task9/testoutput/")
+
+
+	ssc.start()
+  ssc.awaitTermination()
 }

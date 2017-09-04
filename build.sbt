@@ -17,7 +17,6 @@ libraryDependencies ++= Seq(
   "org.apache.spark" % "spark-core_2.11" % "2.2.0" % "provided",
   "org.apache.spark" % "spark-streaming_2.11" % "2.2.0" % "provided",
   "org.apache.spark" % "spark-sql_2.11" % "2.2.0" % "provided",
-  "org.json4s" %% "json4s-jackson" % "3.+",
   "jpcap" % "jpcap" % "0.1.18-002"
   //  "org.scalatest" %% "scalatest_2.11" % "3.0.3" % "test"
 )
