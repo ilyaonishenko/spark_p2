@@ -6,6 +6,7 @@ import java.net.{ServerSocket, Socket}
 import com.example.model.CustomPacket
 import net.sourceforge.jpcap.capture.{PacketCapture, PacketListener}
 import net.sourceforge.jpcap.net.{Packet, TCPPacket}
+import com.github.nscala_time.time.Imports._
 import org.joda.time.DateTime
 
 class ScalaSniffer(device: String) {
