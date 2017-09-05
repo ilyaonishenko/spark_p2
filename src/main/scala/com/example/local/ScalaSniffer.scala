@@ -1,6 +1,6 @@
 package com.example.local
 
-import java.io.{DataOutputStream, IOException, ObjectOutputStream}
+import java.io.{DataOutputStream, IOException, ObjectOutputStream, PrintWriter}
 import java.net.{ServerSocket, Socket}
 
 import com.example.transport.Sender
@@ -49,24 +49,21 @@ class ScalaSniffer(device: String) {
 class ScalaPacketHandler extends PacketListener {
 
     val serverSocket = new ServerSocket(8585)
-
+    val socket: Socket = serverSocket.accept()
+    val out = new PrintWriter(new DataOutputStream(socket.getOutputStream))
 
   def packetArrived(packet: Packet): Unit = {
     println("packet arrived")
     try {
-
       packet match {
         case tcpPacket: TCPPacket =>
 
-          val socket: Socket = serverSocket.accept()
           //        TODO sending to Spark server
           println("working with tcppacket")
-          val out = new ObjectOutputStream(new DataOutputStream(socket.getOutputStream))
-          out.write(tcpPacket.toString.getBytes)
+          out.println(tcpPacket.toString)
           out.flush()
           println("flushed")
           println("closed")
-          socket.close()
         //        Sender.send(tcpPacket.toString)
 
         /*val data = tcpPacket.getTCPData
@@ -92,7 +89,11 @@ object ScalaSniffer extends App {
   } else {
     println("Usage: java Sniffer [device name]")
     println("Available network devices on your machine:")
+    val serverSocket = new ServerSocket(8585)
+    val socket: Socket = serverSocket.accept()
+    val out = new PrintWriter(new DataOutputStream(socket.getOutputStream))
     val devs: Array[String] = PacketCapture.lookupDevices()
     devs.foreach(dev => println("\t" + dev))
+    socket.close()
   }
 }

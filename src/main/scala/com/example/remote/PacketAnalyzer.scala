@@ -22,7 +22,7 @@ object PacketAnalyzer extends App{
 
 //  val packets = ssc.receiverStream(new PacketsReceiver("localhost", 9999))
   val packets = ssc.socketTextStream("10.0.2.2", 8585, StorageLevel.MEMORY_AND_DISK_2)
-  packets.map(println).saveAsTextFiles("/tasks/task9/testoutput/")
+  packets.saveAsTextFiles("/tasks/task9/testoutput/")
 
 
 	ssc.start()
