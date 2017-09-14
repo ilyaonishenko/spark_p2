@@ -23,3 +23,9 @@ spark-submit --class com.example.remote.PacketAnalyzer --master local[*] --deplo
 ```
 Very important to use parameter ```--master local[*]``` because if you do not use it there will single-thread application
 and you will not use features of spark streaming.
+
+If you are using horton virtualbox, you need to change Kafka config:
+```
+listeners ________________ PLAINTEXT://0.0.0.0:6667
+```
+And now KafkaCons working remote (I did not test it locally yet)

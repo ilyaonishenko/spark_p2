@@ -36,61 +36,18 @@ object PacketAnalyzer extends App{
 			StructField("timestamps", DataTypes.TimestampType, nullable = false)
 		))
 
-	val pattern = "select * from stats where stats1.host = \""
-
-	val props = new Properties()
-	props.put("bootstrap.servers", "127.0.0.1:2181")
-	props.put("client.id", "ScalaProducerExample")
-	props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-	props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-	props.put("auto.create.topics.enable", "true")
-
-	val producer = new KafkaProducer[String, String](props)
-
 	ssc
 		.receiverStream(new PacketsReceiver("10.0.2.2", 8585))
 		.map(strToCustomPacket)
   	.map(packet => (packet.destAdrr, packet))
-		.window(Minutes(5))
+		.window(Minutes(2), Minutes(2))
 		.reduceByKey(mergePackets)
   	.map(tuple => getStats(tuple._2))
 		.map(stat => Seq(stat.host, stat.size, stat.speed, stat.timestamp))
   	.foreachRDD(rdd => {
-			val df = sqlContext.createDataFrame(rdd.map(Row(_:_*)), schema)
-			val df1 = df.toDF()
-			df1.foreach(row => {
-				Try(sql(pattern + row.getString(0)+"\";")) match{
-					case s: Success[DataFrame] =>
-						val oldRow = s.value.reduce((row1, row2) => (row1, row2) match{
-							case (row_1, row_2) if row_1.getInt(1) > row_2.getInt(1) =>
-								println(s"comparing two rows: $row_1 and $row_2")
-								Row(
-									row_1.getString(0),
-									row_1.getInt(1),
-									row_1.getDouble(2),
-									row_1.getTimestamp(3)
-								)
-							case (row_1, row_2) if row_1.getInt(1) < row_2.getInt(1) =>
-								println(s"comparing2 two rows: $row_1 and $row_2")
-								Row(
-									row_1.getString(0),
-									row_2.getInt(1),
-									row_1.getDouble(2),
-									row_2.getTimestamp(3)
-								)
-						})
-						if (oldRow.getInt(1) > row.getInt(1)) {
-							println("aldsadsadjsalkdsajdlksadjlksajdsalkdsadjsdsadaswwwwwwwwwwwwwwwwwwwwwwwsadmsad")
-							producer.send(new ProducerRecord[String, String]("don_alarmos", "127.0.0.1", "Size warning!"))
-						}
-						case f: Failure[DataFrame] => println("there are some exceptions occured!")
-				}
-			})
-			df.write.mode("append").saveAsTable("stats1")
+			sqlContext.createDataFrame(rdd.map(Row(_: _*)), schema)
+				.write.mode("append").saveAsTable("stats1")
 		})
-//	val settings1 = sqlContext.table("settings_v1").toDF()
-//	val func: (String, String) => String = {
-//	}
 
 	ssc.start()
   ssc.awaitTermination()
