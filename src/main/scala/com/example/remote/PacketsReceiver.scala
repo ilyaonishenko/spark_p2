@@ -60,10 +60,9 @@ class PacketsReceiver(host: String, port: Int)
   }
 
 	def alarmController(maybeAlarm: String => Option[String])(str: String): Unit = {
-		println(s"in alarm controller with str: $str")
 		maybeAlarm(str) match {
 			case Some(string) => KafkarProd(string)
-			case None => KafkarProd("No alarms and no surprises")
+			case None =>
 		}
 	}
 
@@ -84,20 +83,12 @@ class PacketsReceiver(host: String, port: Int)
 
 	def maybeAlarmWithMap(packetInfo: String): Option[String] = {
 		val packet = strToCustomPacket(packetInfo)
-		println(s"mybealarmwithmap with packet: $packet")
 		state.get(packet.destAdrr) match {
 			case Some((size, _)) if size < packet.size =>
 				state = state.updated(packet.destAdrr, (packet.size, 0))
-				println("first")
-				Some("size < packet.size\n\n")
-			case Some((size, _)) if size > packet.size =>
-				println("second")
-				Some("size > packet.size\n\n")
-			case Some((_ , _)) =>
-				println("third")
-				Some("I do not know what")
+				Some(packetInfo)
+			case Some((_ , _)) => Option.empty
 			case None =>
-				println("None")
 				state = state.updated(packet.destAdrr, (packet.size, 0))
 				Option.empty
 		}
@@ -119,9 +110,7 @@ object KafkarProd {
 						topic: String = this.topic,
 						key: String = this.key): Unit = {
 		val producer = this.producer
-		println(s"we are going to send thsi: $msg")
 		producer.send(new ProducerRecord[String, String](topic, key, msg))
-		println("and we send it")
 		producer.close()
 	}
 }

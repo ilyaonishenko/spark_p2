@@ -1,16 +1,13 @@
 package com.example.remote
 
 import java.sql.Timestamp
-import java.util.Properties
 
 import com.example.model.CustomPacket
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.types.{DataTypes, StructField, StructType}
 import org.apache.spark.streaming.{Minutes, Seconds, StreamingContext}
 import org.joda.time.DateTime
 
-import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
 object PacketAnalyzer extends App{
@@ -26,7 +23,6 @@ object PacketAnalyzer extends App{
   val ssc = new StreamingContext(sparkContext, Seconds(10))
 
 	val sqlContext = sparkSession.sqlContext
-	import sparkSession.sql
 
 	val schema = StructType(
 		Seq(
@@ -57,11 +53,6 @@ object PacketAnalyzer extends App{
 	}
 
 	def mergePackets(pckt1: CustomPacket, pckt2: CustomPacket): CustomPacket =
-		/*pckt1 match {
-		case CustomPacket(adr, size, time) if time.isBefore(pckt2.time) =>
-			CustomPacket(adr, size+pckt2.size, time)
-		case CustomPacket(adr, size, time) if time.isAfter(pckt2.time) =>
-			CustomPacket(adr, size+pckt2.size, pckt2.time)*/
 	if(pckt1.time.isBefore(pckt2.time)){
 		CustomPacket(pckt1.destAdrr, pckt1.size+pckt2.size, pckt1.time)
 	} else CustomPacket(pckt1.destAdrr, pckt1.size+pckt2.size, pckt2.time)
